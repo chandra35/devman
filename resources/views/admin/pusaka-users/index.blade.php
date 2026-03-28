@@ -243,14 +243,26 @@ $(function() {
 function initMap() {
     map = L.map('mapContainer').setView([defaultLat, defaultLng], 18);
 
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '&copy; Esri',
-        maxZoom: 20,
-    }).addTo(map);
+    // Layer: Satelit (Google Hybrid - sudah ada label jalan/kota)
+    var satellite = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        attribution: '&copy; Google',
+        maxZoom: 21,
+    });
 
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 20,
-    }).addTo(map);
+    // Layer: Peta Jalan (OpenStreetMap - detail nama lokal lengkap)
+    var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap',
+        maxZoom: 19,
+    });
+
+    // Default: satelit
+    satellite.addTo(map);
+
+    // Layer switcher
+    L.control.layers({
+        'Satelit': satellite,
+        'Peta Jalan': street,
+    }, null, { position: 'topright' }).addTo(map);
 
     marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
 
@@ -340,18 +352,32 @@ function searchLocation() {
 
     $.ajax({
         url: 'https://nominatim.openstreetmap.org/search',
-        data: { q: q, format: 'json', limit: 5, countrycodes: 'id' },
+        data: {
+            q: q,
+            format: 'json',
+            limit: 8,
+            addressdetails: 1,
+            countrycodes: 'id',
+            'accept-language': 'id',
+        },
+        headers: { 'Accept-Language': 'id' },
         success: function(results) {
             var container = $('#searchResults').empty();
             if (results.length === 0) {
-                container.html('<div class="search-item text-muted">Lokasi tidak ditemukan</div>').show();
+                container.html('<div class="search-item text-muted">Tidak ditemukan. Coba kata kunci lain (misal: nama kecamatan/kota)</div>').show();
                 return;
             }
             results.forEach(function(r) {
+                var label = r.display_name;
+                // Tampilkan tipe lokasi jika ada
+                var typeLabel = r.type ? '<small class="text-muted ml-1">(' + r.type.replace(/_/g,' ') + ')</small>' : '';
                 var item = $('<div class="search-item"></div>')
-                    .text(r.display_name)
+                    .html(label + typeLabel)
                     .on('click', function() {
-                        setMapPosition(parseFloat(r.lat), parseFloat(r.lon));
+                        var zoom = r.type === 'city' || r.type === 'town' ? 14 : (r.type === 'village' || r.type === 'suburb' ? 16 : 18);
+                        map.setView([parseFloat(r.lat), parseFloat(r.lon)], zoom);
+                        marker.setLatLng([parseFloat(r.lat), parseFloat(r.lon)]);
+                        updateCoordFields(parseFloat(r.lat), parseFloat(r.lon));
                         container.hide();
                         $('#mapSearch').val('');
                     });
