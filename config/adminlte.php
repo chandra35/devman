@@ -323,6 +323,13 @@ return [
             'icon' => 'fas fa-fw fa-key',
             'can' => 'view-permissions',
         ],
+        ['header' => 'APLIKASI'],
+        [
+            'text' => 'Login Logs',
+            'route' => 'admin.login-logs.index',
+            'icon' => 'fas fa-fw fa-history',
+            'can' => 'view-users',
+        ],
         ['header' => 'AKUN'],
         [
             'text' => 'Profile',

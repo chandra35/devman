@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\LoginLogController;
 
 // Auth Routes
 Route::get('/', function () {
@@ -56,5 +57,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/permissions/{permission}', [PermissionController::class, 'update'])->middleware('permission:edit-permissions')->name('permissions.update');
         Route::delete('/permissions/{permission}', [PermissionController::class, 'destroy'])->middleware('permission:delete-permissions')->name('permissions.destroy');
         Route::post('/permissions/scan', [PermissionController::class, 'scan'])->middleware('permission:scan-permissions')->name('permissions.scan');
+    });
+
+    // Login Logs
+    Route::middleware('permission:view-users')->group(function () {
+        Route::get('/login-logs', [LoginLogController::class, 'index'])->name('login-logs.index');
+        Route::get('/login-logs/data', [LoginLogController::class, 'data'])->name('login-logs.data');
     });
 });

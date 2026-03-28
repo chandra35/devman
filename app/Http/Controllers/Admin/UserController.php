@@ -65,6 +65,9 @@ class UserController extends Controller
                 'is_active' => $user->is_active
                     ? '<span class="badge badge-success">Aktif</span>'
                     : '<span class="badge badge-danger">Nonaktif</span>',
+                'kemenag' => $user->kemenag_username
+                    ? '<span class="badge badge-success" title="' . e($user->kemenag_username) . '"><i class="fas fa-check"></i> Terhubung</span>'
+                    : '<span class="badge badge-secondary">Belum</span>',
                 'actions' => $this->getActionButtons($user),
             ];
         });
@@ -109,6 +112,8 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => $request->password,
             'is_active' => $request->boolean('is_active', true),
+            'kemenag_username' => $request->kemenag_username,
+            'kemenag_password' => $request->kemenag_password,
         ]);
 
         $user->syncRoles($request->roles);
@@ -122,9 +127,12 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load('roles');
+        $data = $user->toArray();
+        $data['kemenag_username'] = $user->kemenag_username;
+        $data['has_kemenag'] = !empty($user->kemenag_username);
         return response()->json([
             'success' => true,
-            'data' => $user,
+            'data' => $data,
         ]);
     }
 
@@ -142,10 +150,15 @@ class UserController extends Controller
             'username' => $request->username,
             'email' => $request->email,
             'is_active' => $request->boolean('is_active', true),
+            'kemenag_username' => $request->kemenag_username,
         ];
 
         if ($request->filled('password')) {
             $data['password'] = $request->password;
+        }
+
+        if ($request->filled('kemenag_password')) {
+            $data['kemenag_password'] = $request->kemenag_password;
         }
 
         $user->update($data);

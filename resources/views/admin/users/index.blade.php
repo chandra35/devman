@@ -33,6 +33,7 @@
                         <th>Username</th>
                         <th>Email</th>
                         <th>Roles</th>
+                        <th>Kemenag</th>
                         <th>Status</th>
                         <th width="100">Aksi</th>
                     </tr>
@@ -87,6 +88,17 @@
                             <label class="custom-control-label" for="userActive">Aktif</label>
                         </div>
                     </div>
+                    <hr>
+                    <h6 class="text-muted"><i class="fas fa-mosque mr-1"></i> Kredensial Pusaka Kemenag</h6>
+                    <div class="form-group">
+                        <label>Username Kemenag</label>
+                        <input type="text" class="form-control" id="kemenagUsername" name="kemenag_username" placeholder="Username Pusaka Kemenag">
+                    </div>
+                    <div class="form-group">
+                        <label>Password Kemenag</label>
+                        <input type="password" class="form-control" id="kemenagPassword" name="kemenag_password" placeholder="Password Pusaka Kemenag">
+                        <small class="text-muted kemenag-hint" style="display:none">Kosongkan jika tidak ingin mengubah password kemenag.</small>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
@@ -120,6 +132,7 @@ $(function() {
             { data: 'username' },
             { data: 'email' },
             { data: 'roles', orderable: false, searchable: false },
+            { data: 'kemenag', orderable: false, searchable: false },
             { data: 'is_active', orderable: false, searchable: false },
             { data: 'actions', orderable: false, searchable: false },
         ],
@@ -175,6 +188,7 @@ function createUser() {
     $('#userPassword').attr('required', true);
     $('.password-required').show();
     $('.password-hint').hide();
+    $('.kemenag-hint').hide();
     $('input[name="roles[]"]').prop('checked', false);
     $('#userActive').prop('checked', true);
     $('#modalUser').modal('show');
@@ -187,6 +201,7 @@ function editUser(id) {
     $('#userPassword').attr('required', false);
     $('.password-required').hide();
     $('.password-hint').show();
+    $('.kemenag-hint').show();
     $('input[name="roles[]"]').prop('checked', false);
 
     $.get('/admin/users/' + id, function(res) {
@@ -194,6 +209,7 @@ function editUser(id) {
         $('#userUsername').val(res.data.username);
         $('#userEmail').val(res.data.email);
         $('#userActive').prop('checked', res.data.is_active);
+        $('#kemenagUsername').val(res.data.kemenag_username || '');
         res.data.roles.forEach(function(role) {
             $('input[name="roles[]"][value="' + role.name + '"]').prop('checked', true);
         });
