@@ -3,29 +3,30 @@
 @section('title', 'Kelola Roles')
 
 @section('css')
+<link rel="stylesheet" href="{{ asset('css/devman-theme.css') }}">
 <link rel="stylesheet" href="//cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 @stop
 
 @section('content_header')
-    <h1><i class="fas fa-user-tag"></i> Kelola Roles</h1>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="margin-bottom:2px"><i class="fas fa-user-tag" style="color:var(--dm-warning)"></i> Kelola Roles</h1>
+            <small class="text-muted">Manajemen role dan hak akses</small>
+        </div>
+        @can('create-roles')
+        <button class="btn btn-primary" onclick="createRole()">
+            <i class="fas fa-plus mr-1"></i> Tambah Role
+        </button>
+        @endcan
+    </div>
 @stop
 
 @section('content')
 <div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Daftar Roles</h3>
-        <div class="card-tools">
-            @can('create-roles')
-            <button class="btn btn-sm btn-primary" onclick="createRole()">
-                <i class="fas fa-plus"></i> Tambah Role
-            </button>
-            @endcan
-        </div>
-    </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-bordered table-striped table-sm" id="rolesTable" width="100%">
+            <table class="table table-hover" id="rolesTable" width="100%">
                 <thead>
                     <tr>
                         <th>Nama Role</th>
@@ -45,8 +46,8 @@
         <div class="modal-content">
             <form id="formRole">
                 <div class="modal-header bg-primary">
-                    <h5 class="modal-title" id="modalRoleTitle">Tambah Role</h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h5 class="modal-title" id="modalRoleTitle"><i class="fas fa-user-tag mr-2"></i>Tambah Role</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="roleId">

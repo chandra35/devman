@@ -3,29 +3,30 @@
 @section('title', 'Kelola Users')
 
 @section('css')
+<link rel="stylesheet" href="{{ asset('css/devman-theme.css') }}">
 <link rel="stylesheet" href="//cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 @stop
 
 @section('content_header')
-    <h1><i class="fas fa-users"></i> Kelola Users</h1>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="margin-bottom:2px"><i class="fas fa-users" style="color:var(--dm-primary)"></i> Kelola Users</h1>
+            <small class="text-muted">Manajemen data pengguna sistem</small>
+        </div>
+        @can('create-users')
+        <button class="btn btn-primary" onclick="createUser()">
+            <i class="fas fa-plus mr-1"></i> Tambah User
+        </button>
+        @endcan
+    </div>
 @stop
 
 @section('content')
 <div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Daftar Users</h3>
-        <div class="card-tools">
-            @can('create-users')
-            <button class="btn btn-sm btn-primary" onclick="createUser()">
-                <i class="fas fa-plus"></i> Tambah User
-            </button>
-            @endcan
-        </div>
-    </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-bordered table-striped table-sm" id="usersTable" width="100%">
+            <table class="table table-hover" id="usersTable" width="100%">
                 <thead>
                     <tr>
                         <th>Nama</th>
@@ -47,8 +48,8 @@
         <div class="modal-content">
             <form id="formUser">
                 <div class="modal-header bg-primary">
-                    <h5 class="modal-title" id="modalUserTitle">Tambah User</h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h5 class="modal-title" id="modalUserTitle"><i class="fas fa-user-plus mr-2"></i>Tambah User</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="userId">

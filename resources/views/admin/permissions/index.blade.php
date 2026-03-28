@@ -3,34 +3,37 @@
 @section('title', 'Kelola Permissions')
 
 @section('css')
+<link rel="stylesheet" href="{{ asset('css/devman-theme.css') }}">
 <link rel="stylesheet" href="//cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 @stop
 
 @section('content_header')
-    <h1><i class="fas fa-key"></i> Kelola Permissions</h1>
-@stop
-
-@section('content')
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Daftar Permissions</h3>
-        <div class="card-tools">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="margin-bottom:2px"><i class="fas fa-key" style="color:var(--dm-danger)"></i> Kelola Permissions</h1>
+            <small class="text-muted">Manajemen permission sistem</small>
+        </div>
+        <div>
             @can('scan-permissions')
-            <button class="btn btn-sm btn-info mr-1" onclick="scanPermissions()">
-                <i class="fas fa-search"></i> Scan Permissions
+            <button class="btn btn-info mr-1" onclick="scanPermissions()">
+                <i class="fas fa-radar mr-1"></i> Scan
             </button>
             @endcan
             @can('create-permissions')
-            <button class="btn btn-sm btn-primary" onclick="createPermission()">
-                <i class="fas fa-plus"></i> Tambah Permission
+            <button class="btn btn-primary" onclick="createPermission()">
+                <i class="fas fa-plus mr-1"></i> Tambah
             </button>
             @endcan
         </div>
     </div>
+@stop
+
+@section('content')
+<div class="card">
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-bordered table-striped table-sm" id="permissionsTable" width="100%">
+            <table class="table table-hover" id="permissionsTable" width="100%">
                 <thead>
                     <tr>
                         <th>Nama Permission</th>
@@ -50,8 +53,8 @@
         <div class="modal-content">
             <form id="formPermission">
                 <div class="modal-header bg-primary">
-                    <h5 class="modal-title" id="modalPermissionTitle">Tambah Permission</h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h5 class="modal-title" id="modalPermissionTitle"><i class="fas fa-key mr-2"></i>Tambah Permission</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="permissionId">

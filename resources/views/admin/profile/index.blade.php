@@ -3,19 +3,45 @@
 @section('title', 'Profile')
 
 @section('css')
+<link rel="stylesheet" href="{{ asset('css/devman-theme.css') }}">
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 @stop
 
 @section('content_header')
-    <h1><i class="fas fa-user-circle"></i> Profile</h1>
+    <div>
+        <h1 style="margin-bottom:2px"><i class="fas fa-user-circle" style="color:var(--dm-primary)"></i> Profile</h1>
+        <small class="text-muted">Kelola informasi akun Anda</small>
+    </div>
 @stop
 
 @section('content')
+{{-- User Info Card --}}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card" style="background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border: none;">
+            <div class="card-body d-flex align-items-center">
+                <div style="width:64px;height:64px;background:linear-gradient(135deg,var(--dm-primary),var(--dm-primary-light));border-radius:16px;display:flex;align-items:center;justify-content:center;margin-right:1.25rem;box-shadow:0 4px 12px rgba(99,102,241,0.3)">
+                    <i class="fas fa-user" style="font-size:1.5rem;color:#fff"></i>
+                </div>
+                <div>
+                    <h5 style="margin:0;font-weight:700;color:var(--dm-dark)">{{ auth()->user()->name }}</h5>
+                    <p style="margin:2px 0 0;color:var(--dm-secondary);font-size:0.875rem">
+                        <span class="mr-3"><i class="fas fa-at mr-1"></i>{{ auth()->user()->username }}</span>
+                        @foreach(auth()->user()->roles as $role)
+                            <span class="badge badge-primary">{{ $role->name }}</span>
+                        @endforeach
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-md-6">
         <div class="card card-primary card-outline">
             <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-user-edit"></i> Update Profile</h3>
+                <h3 class="card-title"><i class="fas fa-user-edit mr-2" style="color:var(--dm-primary)"></i>Update Profile</h3>
             </div>
             <form id="formProfile">
                 @csrf @method('PUT')
@@ -34,7 +60,7 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Simpan</button>
                 </div>
             </form>
         </div>
@@ -43,7 +69,7 @@
     <div class="col-md-6">
         <div class="card card-warning card-outline">
             <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-lock"></i> Ubah Password</h3>
+                <h3 class="card-title"><i class="fas fa-lock mr-2" style="color:var(--dm-warning)"></i>Ubah Password</h3>
             </div>
             <form id="formPassword">
                 @csrf @method('PUT')
