@@ -4,128 +4,79 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\LoginLog;
-use App\Models\User;
+use App\Models\PusakaUser;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    /**
+     * Verify apakah NIP diizinkan menggunakan PusakaV3.
+     * Dipanggil dari app Flutter sebelum load WebView.
+     */
+    public function verify(Request $request)
     {
         $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
+            'nip' => 'required|string',
             'device_info' => 'nullable|string',
-            'app_name' => 'nullable|string',
         ]);
 
-        $user = User::where('username', $request->username)->first();
-
         $logData = [
-            'username' => $request->username,
-            'app_name' => $request->app_name ?? 'pusakav3',
+            'username' => $request->nip,
+            'app_name' => 'pusakav3',
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
             'device_info' => $request->device_info,
         ];
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        $pusakaUser = PusakaUser::where('nip', $request->nip)->first();
+
+        // NIP tidak terdaftar
+        if (!$pusakaUser) {
             LoginLog::create(array_merge($logData, [
-                'user_id' => $user?->id,
                 'status' => 'failed',
-                'notes' => 'Invalid credentials',
+                'notes' => 'NIP tidak terdaftar',
             ]));
 
             return response()->json([
                 'success' => false,
-                'message' => 'Username atau password salah',
-            ], 401);
-        }
-
-        if (!$user->is_active) {
-            LoginLog::create(array_merge($logData, [
-                'user_id' => $user->id,
-                'status' => 'failed',
-                'notes' => 'Account inactive',
-            ]));
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Akun tidak aktif',
+                'message' => 'User tidak diizinkan menggunakan aplikasi ini. Hubungi admin.',
             ], 403);
         }
 
-        // Revoke old tokens for this app
-        $user->tokens()->where('name', $logData['app_name'])->delete();
+        // NIP terdaftar tapi nonaktif
+        if (!$pusakaUser->is_active) {
+            LoginLog::create(array_merge($logData, [
+                'status' => 'failed',
+                'notes' => 'NIP nonaktif',
+            ]));
 
-        // Create new token
-        $token = $user->createToken($logData['app_name']);
-
-        // Log successful login
-        LoginLog::create(array_merge($logData, [
-            'user_id' => $user->id,
-            'status' => 'success',
-        ]));
-
-        // Build response with kemenag credentials if available
-        $response = [
-            'success' => true,
-            'message' => 'Login berhasil',
-            'data' => [
-                'token' => $token->plainTextToken,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'username' => $user->username,
-                ],
-                'kemenag' => null,
-            ],
-        ];
-
-        if ($user->kemenag_username && $user->kemenag_password) {
-            $response['data']['kemenag'] = [
-                'username' => $user->kemenag_username,
-                'password' => $user->getDecryptedKemenagPassword(),
-            ];
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses Anda telah dinonaktifkan. Hubungi admin.',
+            ], 403);
         }
 
-        return response()->json($response);
-    }
-
-    public function logout(Request $request)
-    {
-        $request->user()->currentAccessToken()->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Logout berhasil',
-        ]);
-    }
-
-    public function me(Request $request)
-    {
-        $user = $request->user();
+        // NIP diizinkan
+        LoginLog::create(array_merge($logData, [
+            'status' => 'success',
+            'notes' => 'Verified: ' . $pusakaUser->name,
+        ]));
 
         return response()->json([
             'success' => true,
+            'message' => 'Akses diizinkan',
             'data' => [
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'username' => $user->username,
-                ],
-                'kemenag' => $user->kemenag_username ? [
-                    'username' => $user->kemenag_username,
-                    'password' => $user->getDecryptedKemenagPassword(),
-                ] : null,
+                'name' => $pusakaUser->name,
+                'nip' => $pusakaUser->nip,
             ],
         ]);
     }
 
-    public function config(Request $request)
+    /**
+     * Config untuk app (location spoofing dll).
+     */
+    public function config()
     {
-        $user = $request->user();
-
         return response()->json([
             'success' => true,
             'data' => [
@@ -134,10 +85,6 @@ class AuthController extends Controller
                     'latitude' => -5.120118,
                     'longitude' => 105.328819,
                 ],
-                'kemenag' => $user->kemenag_username ? [
-                    'username' => $user->kemenag_username,
-                    'password' => $user->getDecryptedKemenagPassword(),
-                ] : null,
             ],
         ]);
     }

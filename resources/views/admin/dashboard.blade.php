@@ -99,6 +99,86 @@
     </div>
 </div>
 
+{{-- Pusaka V3 Stats --}}
+<div class="row">
+    <div class="col-12 mb-2">
+        <h5 class="text-muted"><i class="fas fa-mosque mr-1"></i> PusakaV3</h5>
+    </div>
+    <div class="col-xl-3 col-md-6 col-12 mb-3">
+        <div class="stat-card stat-bg-primary">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ $totalPusakaUsers }}</div>
+                    <div class="stat-label">User Pusaka</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-mosque"></i>
+                </div>
+            </div>
+            @can('view-users')
+            <div class="stat-footer">
+                <a href="{{ route('admin.pusaka-users.index') }}">Kelola User <i class="fas fa-arrow-right ml-1" style="font-size:0.7rem"></i></a>
+            </div>
+            @endcan
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 col-12 mb-3">
+        <div class="stat-card stat-bg-success">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ $activePusakaUsers }}</div>
+                    <div class="stat-label">User Aktif</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+            </div>
+            <div class="stat-footer">
+                <span style="font-size:0.8rem;color:var(--dm-success)">
+                    <i class="fas fa-circle" style="font-size:0.5rem;vertical-align:middle"></i>
+                    Diizinkan login PusakaV3
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 col-12 mb-3">
+        <div class="stat-card stat-bg-warning">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ $totalLogins }}</div>
+                    <div class="stat-label">Total Login</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-sign-in-alt"></i>
+                </div>
+            </div>
+            @can('view-users')
+            <div class="stat-footer">
+                <a href="{{ route('admin.login-logs.index') }}">Lihat Log <i class="fas fa-arrow-right ml-1" style="font-size:0.7rem"></i></a>
+            </div>
+            @endcan
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 col-12 mb-3">
+        <div class="stat-card stat-bg-danger">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ $todayLogins }}</div>
+                    <div class="stat-label">Login Hari Ini</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+            </div>
+            <div class="stat-footer">
+                <span style="font-size:0.8rem">
+                    <i class="fas fa-clock mr-1"></i> {{ now()->format('d/m/Y') }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- System Info --}}
 <div class="row">
     <div class="col-lg-8">

@@ -323,7 +323,13 @@ return [
             'icon' => 'fas fa-fw fa-key',
             'can' => 'view-permissions',
         ],
-        ['header' => 'APLIKASI'],
+        ['header' => 'PUSAKA V3'],
+        [
+            'text' => 'User Pusaka',
+            'route' => 'admin.pusaka-users.index',
+            'icon' => 'fas fa-fw fa-mosque',
+            'can' => 'view-users',
+        ],
         [
             'text' => 'Login Logs',
             'route' => 'admin.login-logs.index',

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\LoginLogController;
+use App\Http\Controllers\Admin\PusakaUserController;
 
 // Auth Routes
 Route::get('/', function () {
@@ -57,6 +58,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/permissions/{permission}', [PermissionController::class, 'update'])->middleware('permission:edit-permissions')->name('permissions.update');
         Route::delete('/permissions/{permission}', [PermissionController::class, 'destroy'])->middleware('permission:delete-permissions')->name('permissions.destroy');
         Route::post('/permissions/scan', [PermissionController::class, 'scan'])->middleware('permission:scan-permissions')->name('permissions.scan');
+    });
+
+    // Pusaka Users
+    Route::middleware('permission:view-users')->group(function () {
+        Route::get('/pusaka-users', [PusakaUserController::class, 'index'])->name('pusaka-users.index');
+        Route::get('/pusaka-users/data', [PusakaUserController::class, 'data'])->name('pusaka-users.data');
+        Route::post('/pusaka-users', [PusakaUserController::class, 'store'])->name('pusaka-users.store');
+        Route::get('/pusaka-users/{pusakaUser}', [PusakaUserController::class, 'show'])->name('pusaka-users.show');
+        Route::put('/pusaka-users/{pusakaUser}', [PusakaUserController::class, 'update'])->name('pusaka-users.update');
+        Route::delete('/pusaka-users/{pusakaUser}', [PusakaUserController::class, 'destroy'])->name('pusaka-users.destroy');
     });
 
     // Login Logs
