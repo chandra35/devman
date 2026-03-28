@@ -14,12 +14,16 @@ class PusakaUser extends Model
         'name',
         'is_active',
         'notes',
+        'latitude',
+        'longitude',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
         ];
     }
 }

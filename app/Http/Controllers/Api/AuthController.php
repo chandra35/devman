@@ -68,6 +68,10 @@ class AuthController extends Controller
             'data' => [
                 'name' => $pusakaUser->name,
                 'nip' => $pusakaUser->nip,
+                'location' => [
+                    'latitude' => $pusakaUser->latitude ? (float) $pusakaUser->latitude : null,
+                    'longitude' => $pusakaUser->longitude ? (float) $pusakaUser->longitude : null,
+                ],
             ],
         ]);
     }

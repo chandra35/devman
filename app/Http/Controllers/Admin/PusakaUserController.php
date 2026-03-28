@@ -82,6 +82,8 @@ class PusakaUserController extends Controller
             'name' => $request->name,
             'is_active' => $request->boolean('is_active', true),
             'notes' => $request->notes,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
         ]);
 
         return response()->json([
@@ -110,6 +112,8 @@ class PusakaUserController extends Controller
             'name' => $request->name,
             'is_active' => $request->boolean('is_active', true),
             'notes' => $request->notes,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
         ]);
 
         return response()->json([
