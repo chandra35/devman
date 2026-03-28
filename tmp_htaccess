@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule ^(.*)$ /home/manmetr1/devman/public/$1 [L]
