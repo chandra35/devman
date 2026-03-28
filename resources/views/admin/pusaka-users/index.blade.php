@@ -8,8 +8,13 @@
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 <link rel="stylesheet" href="//unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-#mapContainer { height: 350px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 10px; }
+#mapContainer { height: 300px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 8px; }
 .coord-info { font-size: 12px; color: #666; }
+.nip-result { font-size: 12px; padding: 8px; border-radius: 6px; display: none; }
+.map-search-box { position: relative; }
+.map-search-box .search-results { position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; background: #fff; border: 1px solid #ddd; border-top: 0; border-radius: 0 0 6px 6px; max-height: 200px; overflow-y: auto; display: none; }
+.map-search-box .search-results .search-item { padding: 6px 10px; cursor: pointer; font-size: 12px; border-bottom: 1px solid #f0f0f0; }
+.map-search-box .search-results .search-item:hover { background: #f8f9fa; }
 </style>
 @stop
 
@@ -60,11 +65,41 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>NIP <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="pusakaNip" name="nip" required placeholder="Masukkan NIP / Username Kemenag">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="pusakaNip" name="nip" required placeholder="NIP 18 digit" maxlength="18">
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-info" id="btnCekNip" onclick="cekNip()">
+                                            <i class="fas fa-search"></i> Cek NIP
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="nipResult" class="nip-result mt-1"></div>
                             </div>
                             <div class="form-group">
                                 <label>Nama <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="pusakaName" name="name" required placeholder="Nama lengkap">
+                            </div>
+                            <div class="form-group">
+                                <label>Nama Lengkap (Kemenag)</label>
+                                <input type="text" class="form-control form-control-sm" id="pusakaNamaLengkap" name="nama_lengkap" placeholder="Auto-fill dari Cek NIP" readonly>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label>Jabatan</label>
+                                        <input type="text" class="form-control form-control-sm" id="pusakaJabatan" name="jabatan" placeholder="Dari Cek NIP" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label>Gol. Ruang</label>
+                                        <input type="text" class="form-control form-control-sm" id="pusakaGolongan" name="golongan" placeholder="Dari Cek NIP" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Satuan Kerja</label>
+                                <input type="text" class="form-control form-control-sm" id="pusakaSatker" name="satker" placeholder="Dari Cek NIP" readonly>
                             </div>
                             <div class="form-group">
                                 <label>Keterangan</label>
@@ -80,7 +115,20 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label><i class="fas fa-map-marker-alt text-danger mr-1"></i>Lokasi Presensi</label>
-                                <div class="coord-info mb-1">Klik peta atau drag marker untuk set titik lokasi</div>
+                                <div class="map-search-box mb-1">
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" id="mapSearch" placeholder="Cari lokasi / alamat..." autocomplete="off">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="searchLocation()">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary" onclick="goToMyLocation()" title="Lokasi saya saat ini">
+                                                <i class="fas fa-crosshairs"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="searchResults" class="search-results"></div>
+                                </div>
                                 <div id="mapContainer"></div>
                                 <div class="row">
                                     <div class="col-6">
@@ -235,6 +283,114 @@ function resetMapToDefault() {
     setMapPosition(defaultLat, defaultLng);
 }
 
+// ==================== CEK NIP ====================
+function cekNip() {
+    var nip = $('#pusakaNip').val().trim();
+    if (nip.length !== 18 || !/^\d{18}$/.test(nip)) {
+        toastr.warning('NIP harus 18 digit angka');
+        return;
+    }
+
+    var btn = $('#btnCekNip');
+    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+    $('#nipResult').hide();
+
+    $.ajax({
+        url: '{{ route("admin.pusaka-users.check-nip") }}',
+        method: 'POST',
+        data: { nip: nip },
+        success: function(res) {
+            if (res.success && res.data) {
+                var d = res.data;
+                $('#pusakaName').val(d.NAMA || d.NAMA_LENGKAP || '');
+                $('#pusakaNamaLengkap').val(d.NAMA_LENGKAP || d.NAMA || '');
+                $('#pusakaJabatan').val(d.TAMPIL_JABATAN || d.TIPE_JABATAN || '');
+                $('#pusakaSatker').val(d.SATKER_1 || '');
+                $('#pusakaGolongan').val(d.GOL_RUANG || '');
+                $('#nipResult').html('<i class="fas fa-check-circle text-success"></i> <strong>' + (d.NAMA_LENGKAP || d.NAMA) + '</strong> — ' + (d.SATKER_1 || '-'))
+                    .removeClass('bg-danger-light').addClass('bg-success-light').css({'background': '#d4edda', 'color': '#155724'}).slideDown();
+            } else {
+                $('#nipResult').html('<i class="fas fa-times-circle"></i> ' + (res.message || 'NIP tidak ditemukan'))
+                    .css({'background': '#f8d7da', 'color': '#721c24'}).slideDown();
+            }
+        },
+        error: function(xhr) {
+            $('#nipResult').html('<i class="fas fa-exclamation-triangle"></i> Gagal menghubungi API')
+                .css({'background': '#f8d7da', 'color': '#721c24'}).slideDown();
+        },
+        complete: function() {
+            btn.prop('disabled', false).html('<i class="fas fa-search"></i> Cek NIP');
+        }
+    });
+}
+
+// ==================== SEARCH LOCATION (Nominatim) ====================
+var searchTimeout;
+$('#mapSearch').on('keyup', function(e) {
+    clearTimeout(searchTimeout);
+    if (e.keyCode === 13) { searchLocation(); return; }
+    var q = $(this).val().trim();
+    if (q.length < 3) { $('#searchResults').hide(); return; }
+    searchTimeout = setTimeout(function() { searchLocation(); }, 500);
+});
+
+function searchLocation() {
+    var q = $('#mapSearch').val().trim();
+    if (q.length < 2) { toastr.warning('Masukkan kata kunci pencarian'); return; }
+
+    $.ajax({
+        url: 'https://nominatim.openstreetmap.org/search',
+        data: { q: q, format: 'json', limit: 5, countrycodes: 'id' },
+        success: function(results) {
+            var container = $('#searchResults').empty();
+            if (results.length === 0) {
+                container.html('<div class="search-item text-muted">Lokasi tidak ditemukan</div>').show();
+                return;
+            }
+            results.forEach(function(r) {
+                var item = $('<div class="search-item"></div>')
+                    .text(r.display_name)
+                    .on('click', function() {
+                        setMapPosition(parseFloat(r.lat), parseFloat(r.lon));
+                        container.hide();
+                        $('#mapSearch').val('');
+                    });
+                container.append(item);
+            });
+            container.show();
+        },
+        error: function() {
+            toastr.error('Gagal mencari lokasi');
+        }
+    });
+}
+
+// Hide search results when clicking outside
+$(document).on('click', function(e) {
+    if (!$(e.target).closest('.map-search-box').length) {
+        $('#searchResults').hide();
+    }
+});
+
+// ==================== MY LOCATION ====================
+function goToMyLocation() {
+    if (!navigator.geolocation) {
+        toastr.error('Browser tidak mendukung geolokasi');
+        return;
+    }
+    toastr.info('Mencari lokasi Anda...');
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            setMapPosition(pos.coords.latitude, pos.coords.longitude);
+            toastr.success('Lokasi ditemukan!');
+        },
+        function(err) {
+            toastr.error('Gagal mendapatkan lokasi: ' + err.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
+
 function createPusakaUser() {
     $('#formPusaka')[0].reset();
     $('#pusakaId').val('');
@@ -242,6 +398,8 @@ function createPusakaUser() {
     $('#pusakaActive').prop('checked', true);
     $('#pusakaLat').val(defaultLat.toFixed(7));
     $('#pusakaLng').val(defaultLng.toFixed(7));
+    $('#nipResult').hide();
+    $('#pusakaNamaLengkap, #pusakaJabatan, #pusakaSatker, #pusakaGolongan').val('');
     $('#modalPusaka').modal('show');
 
     setTimeout(function() {
@@ -253,10 +411,15 @@ function editPusakaUser(id) {
     $('#formPusaka')[0].reset();
     $('#pusakaId').val(id);
     $('#modalPusakaTitle').html('<i class="fas fa-mosque mr-2"></i>Edit User Pusaka');
+    $('#nipResult').hide();
 
     $.get('/admin/pusaka-users/' + id, function(res) {
         $('#pusakaNip').val(res.data.nip);
         $('#pusakaName').val(res.data.name);
+        $('#pusakaNamaLengkap').val(res.data.nama_lengkap || '');
+        $('#pusakaJabatan').val(res.data.jabatan || '');
+        $('#pusakaSatker').val(res.data.satker || '');
+        $('#pusakaGolongan').val(res.data.golongan || '');
         $('#pusakaNotes').val(res.data.notes);
         $('#pusakaActive').prop('checked', res.data.is_active);
 

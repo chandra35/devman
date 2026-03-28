@@ -68,6 +68,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/pusaka-users/{pusakaUser}', [PusakaUserController::class, 'show'])->name('pusaka-users.show');
         Route::put('/pusaka-users/{pusakaUser}', [PusakaUserController::class, 'update'])->name('pusaka-users.update');
         Route::delete('/pusaka-users/{pusakaUser}', [PusakaUserController::class, 'destroy'])->name('pusaka-users.destroy');
+        Route::post('/pusaka-users/check-nip', [PusakaUserController::class, 'checkNip'])->name('pusaka-users.check-nip');
     });
 
     // Login Logs

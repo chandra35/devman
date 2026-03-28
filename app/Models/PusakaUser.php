@@ -12,6 +12,10 @@ class PusakaUser extends Model
     protected $fillable = [
         'nip',
         'name',
+        'nama_lengkap',
+        'jabatan',
+        'satker',
+        'golongan',
         'is_active',
         'notes',
         'latitude',

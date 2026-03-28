@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PusakaUser;
+use App\Services\KemenagNipService;
 use Illuminate\Http\Request;
 
 class PusakaUserController extends Controller
@@ -80,6 +81,10 @@ class PusakaUserController extends Controller
         PusakaUser::create([
             'nip' => $request->nip,
             'name' => $request->name,
+            'nama_lengkap' => $request->nama_lengkap,
+            'jabatan' => $request->jabatan,
+            'satker' => $request->satker,
+            'golongan' => $request->golongan,
             'is_active' => $request->boolean('is_active', true),
             'notes' => $request->notes,
             'latitude' => $request->latitude,
@@ -110,6 +115,10 @@ class PusakaUserController extends Controller
         $pusakaUser->update([
             'nip' => $request->nip,
             'name' => $request->name,
+            'nama_lengkap' => $request->nama_lengkap,
+            'jabatan' => $request->jabatan,
+            'satker' => $request->satker,
+            'golongan' => $request->golongan,
             'is_active' => $request->boolean('is_active', true),
             'notes' => $request->notes,
             'latitude' => $request->latitude,
@@ -130,5 +139,14 @@ class PusakaUserController extends Controller
             'success' => true,
             'message' => 'User Pusaka berhasil dihapus.',
         ]);
+    }
+
+    public function checkNip(Request $request, KemenagNipService $nipService)
+    {
+        $request->validate(['nip' => 'required|string|size:18']);
+
+        $result = $nipService->cekNip($request->nip);
+
+        return response()->json($result);
     }
 }
