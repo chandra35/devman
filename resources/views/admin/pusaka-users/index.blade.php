@@ -350,6 +350,11 @@ function searchLocation() {
     var q = $('#mapSearch').val().trim();
     if (q.length < 2) { toastr.warning('Masukkan kata kunci pencarian'); return; }
 
+    // Gunakan bounding box peta yang sedang ditampilkan sebagai bias
+    var bounds = map.getBounds();
+    var viewbox = bounds.getWest() + ',' + bounds.getNorth() + ',' + bounds.getEast() + ',' + bounds.getSouth();
+    var center = map.getCenter();
+
     $.ajax({
         url: 'https://nominatim.openstreetmap.org/search',
         data: {
@@ -359,20 +364,33 @@ function searchLocation() {
             addressdetails: 1,
             countrycodes: 'id',
             'accept-language': 'id',
+            viewbox: viewbox,
+            bounded: 0,  // bias ke area peta, tapi tetap cari di luar jika tidak ada hasil
         },
         headers: { 'Accept-Language': 'id' },
         success: function(results) {
             var container = $('#searchResults').empty();
             if (results.length === 0) {
-                container.html('<div class="search-item text-muted">Tidak ditemukan. Coba kata kunci lain (misal: nama kecamatan/kota)</div>').show();
+                container.html('<div class="search-item text-muted">Tidak ditemukan. Coba zoom out peta terlebih dahulu lalu cari lagi.</div>').show();
                 return;
             }
+
+            // Urutkan: hasil terdekat dari center peta dulu
+            results.sort(function(a, b) {
+                var distA = Math.pow(parseFloat(a.lat) - center.lat, 2) + Math.pow(parseFloat(a.lon) - center.lng, 2);
+                var distB = Math.pow(parseFloat(b.lat) - center.lat, 2) + Math.pow(parseFloat(b.lon) - center.lng, 2);
+                return distA - distB;
+            });
+
             results.forEach(function(r) {
-                var label = r.display_name;
-                // Tampilkan tipe lokasi jika ada
-                var typeLabel = r.type ? '<small class="text-muted ml-1">(' + r.type.replace(/_/g,' ') + ')</small>' : '';
+                var addr = r.address || {};
+                // Tampilkan nama pendek + konteks wilayah
+                var shortName = r.name || r.display_name.split(',')[0];
+                var region = [addr.city || addr.town || addr.village || addr.suburb, addr.state].filter(Boolean).join(', ');
+                var typeLabel = r.type ? ' <small class="text-muted">(' + r.type.replace(/_/g,' ') + ')</small>' : '';
+                var regionLabel = region ? ' <small class="text-muted">— ' + region + '</small>' : '';
                 var item = $('<div class="search-item"></div>')
-                    .html(label + typeLabel)
+                    .html('<strong>' + shortName + '</strong>' + typeLabel + regionLabel)
                     .on('click', function() {
                         var zoom = r.type === 'city' || r.type === 'town' ? 14 : (r.type === 'village' || r.type === 'suburb' ? 16 : 18);
                         map.setView([parseFloat(r.lat), parseFloat(r.lon)], zoom);
