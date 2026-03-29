@@ -34,13 +34,28 @@ class LoginLogController extends Controller
             $query->where('app_name', $request->app_name);
         }
 
+        // Filter rentang tanggal
+        if ($request->filled('date_range')) {
+            $days = match($request->date_range) {
+                '7days'   => 7,
+                '1month'  => 30,
+                '3months' => 90,
+                default   => null,
+            };
+            if ($days) {
+                $query->where('created_at', '>=', now()->subDays($days));
+            }
+        }
+
         $totalFiltered = $query->count();
         $totalData = LoginLog::count();
 
-        $orderColumn = $request->input('order.0.column', 5);
+        $orderColumn = $request->input('order.0.column', 6);
         $orderDir = $request->input('order.0.dir', 'desc');
-        $columns = ['username', 'app_name', 'ip_address', 'device_info', 'status', 'created_at'];
-        $orderBy = $columns[$orderColumn] ?? 'created_at';
+        $columns = ['username', 'app_name', 'ip_address', 'device_info', 'login_location', 'status', 'created_at'];
+        $orderBy = in_array($columns[$orderColumn] ?? '', ['username', 'app_name', 'ip_address', 'device_info', 'status', 'created_at'])
+            ? $columns[$orderColumn]
+            : 'created_at';
         $query->orderBy($orderBy, $orderDir);
 
         $start = $request->input('start', 0);
@@ -52,17 +67,32 @@ class LoginLogController extends Controller
         $logs = $query->get();
 
         $data = $logs->map(function ($log) {
+            // Buat link Google Maps jika ada koordinat
+            if ($log->login_latitude && $log->login_longitude) {
+                $lat = number_format((float) $log->login_latitude, 6);
+                $lng = number_format((float) $log->login_longitude, 6);
+                $mapsUrl = "https://www.google.com/maps?q={$lat},{$lng}";
+                $locationHtml = '<a href="' . $mapsUrl . '" target="_blank" class="btn btn-xs btn-outline-success" title="Buka di Google Maps">'
+                    . '<i class="fas fa-map-marker-alt"></i> ' . $lat . ', ' . $lng
+                    . '</a>';
+            } else {
+                $locationHtml = '<span class="text-muted small">-</span>';
+            }
+
             return [
-                'username' => e($log->username),
-                'user_name' => $log->user ? e($log->user->name) : '-',
-                'app_name' => '<span class="badge badge-info">' . e($log->app_name) . '</span>',
-                'ip_address' => e($log->ip_address ?? '-'),
-                'device_info' => e($log->device_info ?? '-'),
-                'status' => $log->status === 'success'
+                'username'       => e($log->username),
+                'user_name'      => $log->user ? e($log->user->name) : '-',
+                'app_name'       => '<span class="badge badge-info">' . e($log->app_name) . '</span>',
+                'ip_address'     => e($log->ip_address ?? '-'),
+                'device_info'    => e($log->device_info ?? '-'),
+                'login_location' => $locationHtml,
+                'status'         => $log->status === 'success'
                     ? '<span class="badge badge-success">Berhasil</span>'
                     : '<span class="badge badge-danger">Gagal</span>',
-                'notes' => e($log->notes ?? '-'),
-                'created_at' => $log->created_at->format('d/m/Y H:i:s'),
+                'notes'          => e($log->notes ?? '-'),
+                'created_at'     => $log->created_at
+                    ? $log->created_at->setTimezone('Asia/Jakarta')->format('d/m/Y H:i:s')
+                    : '-',
             ];
         });
 

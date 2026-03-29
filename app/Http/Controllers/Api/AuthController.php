@@ -18,6 +18,8 @@ class AuthController extends Controller
         $request->validate([
             'nip' => 'required|string',
             'device_info' => 'nullable|string',
+            'login_latitude' => 'nullable|numeric|between:-90,90',
+            'login_longitude' => 'nullable|numeric|between:-180,180',
         ]);
 
         $logData = [
@@ -26,6 +28,8 @@ class AuthController extends Controller
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
             'device_info' => $request->device_info,
+            'login_latitude' => $request->login_latitude,
+            'login_longitude' => $request->login_longitude,
         ];
 
         $pusakaUser = PusakaUser::where('nip', $request->nip)->first();
