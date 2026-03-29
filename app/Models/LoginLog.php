@@ -16,8 +16,6 @@ class LoginLog extends Model
         'ip_address',
         'user_agent',
         'device_info',
-        'login_latitude',
-        'login_longitude',
         'status',
         'notes',
         'logged_at',

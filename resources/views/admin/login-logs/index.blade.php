@@ -57,7 +57,6 @@
                         <th>Aplikasi</th>
                         <th>IP Address</th>
                         <th>Device</th>
-                        <th>Lokasi Login</th>
                         <th>Status</th>
                         <th>Keterangan</th>
                         <th>Waktu (WIB)</th>
@@ -94,7 +93,6 @@ $(function() {
             { data: 'app_name', searchable: false },
             { data: 'ip_address' },
             { data: 'device_info' },
-            { data: 'login_location', searchable: false, orderable: false },
             { data: 'status', searchable: false },
             { data: 'notes', orderable: false },
             { data: 'created_at' },
@@ -107,7 +105,7 @@ $(function() {
             search: 'Cari:',
             paginate: { previous: '<i class="fas fa-chevron-left"></i>', next: '<i class="fas fa-chevron-right"></i>' }
         },
-        order: [[8, 'desc']],
+        order: [[7, 'desc']],
     });
 
     $('#filterStatus, #filterApp').on('change', function() {
