@@ -34,7 +34,7 @@ class LoginLogController extends Controller
             $query->where('app_name', $request->app_name);
         }
 
-        // Filter rentang tanggal
+        // Filter rentang tanggal — quick range ATAU custom datepicker
         if ($request->filled('date_range')) {
             $days = match($request->date_range) {
                 '7days'   => 7,
@@ -44,6 +44,13 @@ class LoginLogController extends Controller
             };
             if ($days) {
                 $query->where('created_at', '>=', now()->subDays($days));
+            }
+        } elseif ($request->filled('date_from') || $request->filled('date_to')) {
+            if ($request->filled('date_from')) {
+                $query->where('created_at', '>=', $request->date_from . ' 00:00:00');
+            }
+            if ($request->filled('date_to')) {
+                $query->where('created_at', '<=', $request->date_to . ' 23:59:59');
             }
         }
 
